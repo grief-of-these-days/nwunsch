@@ -43,12 +43,12 @@ protected:
 };
 
 template<>
-static constexpr char NeedlemanWunsch::defChar () {
+constexpr char NeedlemanWunsch::defChar () {
     return '*';
 }
 
 template<>
-static constexpr wchar_t NeedlemanWunsch::defChar () {
+constexpr wchar_t NeedlemanWunsch::defChar () {
     return L'*';
 }
 
