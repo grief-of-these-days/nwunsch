@@ -82,3 +82,59 @@ SCENARIO ("Align strings with rule sequence", "[nwunsch]") {
         }
     }
 }
+
+
+SCENARIO ("Align multiple strings with wildcards", "[nwunsch]") {
+    GIVEN ("A list of basic strings") {
+        const std::vector<std::string> list = {
+            "*12*bc777*",
+            "a1***b771*",
+            "a2**bc77*7",
+            "*3**c*77**"
+        };
+
+        WHEN ("Aligned all strings in order") {
+            NeedlemanWunsch nw;
+
+            std::string res;
+            for (const auto& y : list) {
+                if (res.empty ())
+                    res = y;
+                else {
+                    std::string y0 (y.size(), 0);
+                    std::string y1 (res.size(), 0);
+
+                    y0.resize (
+                        std::distance (
+                            y0.begin(), 
+                            std::remove_copy (
+                                y.cbegin (), y.cend (),
+                                y0.begin (), '*')));
+
+                    nw.align (
+                        y0.begin (), y0.end (),
+                        res.begin (), res.end (),
+                        y1.begin (),
+                        [](char a, char b) {
+                            if (a == '*' || b == '*')
+                                return 1;
+                            else
+                                return a == b ? 2 : -2;
+                        });
+
+                    std::transform (
+                        res.cbegin (), res.cend (),
+                        y1.cbegin (),
+                        res.begin (),
+                        [](char a, char b) {
+                            return a == '*' ? b : a;
+                        });
+                }
+            }
+
+            THEN ("The final string must match the expected value") {
+                REQUIRE (res == "a123bc7771");
+            }
+        }
+    }
+}
