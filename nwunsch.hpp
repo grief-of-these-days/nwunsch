@@ -101,7 +101,7 @@ void NeedlemanWunsch::align (
     static_assert (std::is_convertible<Score, std::function<int(const Char&, const Ref&)>>::value,
         "Score callback must have a correct signature.");
 
-    static_assert (std::is_same<std::result_of<Score(const Char&, const Ref&)>::type, int>::value,
+    static_assert (std::is_same<typename std::result_of<Score(const Char&, const Ref&)>::type, int>::value,
         "Score callback must return int.");
 
     nwscore (char_begin, char_end, ref_begin, ref_end, f);
@@ -112,8 +112,8 @@ void NeedlemanWunsch::align (
 
     size_t i = sz_x;
     size_t j = sz_y;
-    auto x = char_begin + sz_x - 1;
-    auto y = ref_begin + sz_y - 1;
+    auto x = std::reverse_iterator<CharIter>(char_begin + sz_x);
+    auto y = std::reverse_iterator<RefIter>(ref_begin + sz_y);
     auto dest = std::reverse_iterator<DestIter> (dest_begin + sz_y);
     while (i > 0 && j > 0) {
         const auto score = score_[j * sz + i];
@@ -123,23 +123,23 @@ void NeedlemanWunsch::align (
 
         if (score == score_diag + f (*x, *y)) {
             *dest++ = *x;
-            if (--i) --x;
-            if (--j) --y;
+            if (--i) ++x;
+            if (--j) ++y;
         } else
         if (score == score_left + d) {
-            if (--i) --x;
+            if (--i) ++x;
         } else {
             *dest++ = defChar<Char> ();
-            if (--j) --y;
+            if (--j) ++y;
         }
     }
 
     while (i > 0) {
-        if (--i) --x;
+        if (--i) ++x;
     }
 
     while (j > 0) {
         *dest++ = defChar<Char> ();
-        if (--j) --y;
+        if (--j) ++y;
     }
 }
